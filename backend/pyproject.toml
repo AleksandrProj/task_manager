@@ -1,0 +1,46 @@
+[project]
+name = "task-manager"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=6.1.1",
+    "djangorestframework>=3.18.1",
+    "gunicorn>=26.2.0",
+    "psycopg[binary]>=3.3.5",
+    "pytest>=9.1.1",
+    "python-dotenv>=1.2.3",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.7",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "UP",
+    "I",
+    "E",
+    "W",
+    "F",
+    "B",
+    "C4",
+    "S",
+    "BLE",
+    "T20",
+    "T10",
+    "PT",
+    "RUF",
+    "DTZ",
+    "ERA",
+    "FURB",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
