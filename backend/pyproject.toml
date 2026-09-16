@@ -5,6 +5,7 @@ requires-python = ">=3.13"
 dependencies = [
     "django>=6.1.1",
     "djangorestframework>=3.18.1",
+    "drf-spectacular>=0.30.0",
     "gunicorn>=26.2.0",
     "psycopg[binary]>=3.3.5",
     "pytest>=9.1.1",
@@ -48,6 +49,7 @@ line-ending = "auto"
 
 [tool.ruff.lint.per-file-ignores]
 "tasks/tests.py" = ["S101"]
+"tasks/test_*.py" = ["S101"]
 "**/migrations/*.py" = ["RUF012"]
 
 [tool.pytest.ini_options]

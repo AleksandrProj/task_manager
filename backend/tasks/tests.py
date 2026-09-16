@@ -2,23 +2,12 @@ from datetime import timedelta
 
 import pytest
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, connection, transaction
-from django.db.migrations.executor import MigrationExecutor
+from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 
 from tasks.models import CommentModel, TasksModel
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.fixture
-def creator(django_user_model):
-    return django_user_model.objects.create_user(username="creator")
-
-
-@pytest.fixture
-def task(creator):
-    return TasksModel.objects.create(title="First task", creator=creator)
 
 
 def test_task_can_be_created_without_assignee_or_description(creator):
@@ -113,44 +102,6 @@ def test_database_rejects_updating_assignee_to_creator(task, creator):
 
     task.refresh_from_db()
     assert task.assignee is None
-
-
-@pytest.mark.usefixtures("transactional_db")
-def test_migration_clears_only_creator_assignments():
-    before = [("tasks", "0001_initial")]
-    after = [("tasks", "0002_prevent_creator_assignment")]
-    executor = MigrationExecutor(connection)
-    executor.migrate(before)
-
-    try:
-        apps = executor.loader.project_state(before).apps
-        user_model = apps.get_model("auth", "User")
-        task_model = apps.get_model("tasks", "TasksModel")
-        creator = user_model.objects.create(username="migration_creator")
-        assignee = user_model.objects.create(username="migration_assignee")
-        invalid_task = task_model.objects.create(
-            title="Self-assigned task", creator=creator, assignee=creator
-        )
-        valid_task = task_model.objects.create(
-            title="Assigned task", creator=creator, assignee=assignee
-        )
-        unassigned_task = task_model.objects.create(
-            title="Unassigned task", creator=creator
-        )
-
-        executor = MigrationExecutor(connection)
-        executor.migrate(after)
-        task_model = executor.loader.project_state(after).apps.get_model(
-            "tasks", "TasksModel"
-        )
-
-        assert task_model.objects.get(pk=invalid_task.pk).assignee_id is None
-        assert task_model.objects.get(pk=invalid_task.pk).creator_id == creator.pk
-        assert task_model.objects.get(pk=valid_task.pk).assignee_id == assignee.pk
-        assert task_model.objects.get(pk=unassigned_task.pk).assignee_id is None
-        assert task_model.objects.count() == 3
-    finally:
-        MigrationExecutor(connection).migrate(after)
 
 
 def test_task_creator_cannot_be_deleted(task, creator):
