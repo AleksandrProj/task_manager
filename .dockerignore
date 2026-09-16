@@ -4,24 +4,22 @@
 .gitattributes
 
 # Python cache
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
+**/__pycache__/
+**/*.py[cod]
 
 # Virtual environments
-.venv/
-venv/
-env/
-ENV/
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
 
 # uv
 .uv/
 
 # Environment / secrets
-.env
-.env.*
-!.env.example
+**/.env
+**/.env.*
+!**/.env.example
 
 # Django
 *.sqlite3
@@ -32,7 +30,7 @@ staticfiles/
 media/
 
 # Tests / coverage
-.pytest_cache/
+**/.pytest_cache/
 .coverage
 htmlcov/
 .tox/
@@ -41,7 +39,7 @@ htmlcov/
 # Type checking / linters
 .mypy_cache/
 .pyright/
-.ruff_cache/
+**/.ruff_cache/
 
 # IDEs
 .idea/
@@ -72,6 +70,7 @@ pnpm-debug.log*
 Dockerfile*
 docker-compose*.yml
 .docker/
+docker/data/
 
 # Documentation
 docs/_build/

@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from tasks.models import CommentModel, TasksModel
+
+admin.site.register(TasksModel)
+admin.site.register(CommentModel)
