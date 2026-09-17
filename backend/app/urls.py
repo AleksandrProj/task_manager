@@ -20,6 +20,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from app.routers import router
+from users.views import LoginView, RefreshView
 
 urlpatterns = [
     # SWAGGER
@@ -30,6 +31,8 @@ urlpatterns = [
         name="swagger-ui",
     ),
     # API
+    path("api/auth/token/", LoginView.as_view(), name="token_obtain_pair"),
+    path("api/auth/token/refresh/", RefreshView.as_view(), name="token_refresh"),
     path("api/", include(router.urls)),
     path("api-auth/", include("rest_framework.urls")),
     path("admin/", admin.site.urls),

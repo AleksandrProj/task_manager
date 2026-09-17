@@ -216,7 +216,7 @@ def test_anonymous_comment_requests_are_rejected(comment, method, detail):
         url, {"task": comment.task_id, "text": "Changed"}, format="json"
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 401
     comment.refresh_from_db()
     assert comment.text == "Comment"
     assert CommentModel.objects.count() == 1

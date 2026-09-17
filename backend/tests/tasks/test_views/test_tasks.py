@@ -266,7 +266,7 @@ def test_anonymous_requests_are_rejected(task, method, detail):
     url = reverse("task-detail", args=[task.pk]) if detail else reverse("task-list")
     response = getattr(APIClient(), method)(url, {"title": "Changed"}, format="json")
 
-    assert response.status_code == 403
+    assert response.status_code == 401
     task.refresh_from_db()
     assert task.title == "First task"
     assert TaskModel.objects.count() == 1
