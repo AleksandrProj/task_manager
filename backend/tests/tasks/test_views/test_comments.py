@@ -178,18 +178,18 @@ def test_only_comment_author_can_change_it(
         format="json",
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 404
     comment.refresh_from_db()
     assert comment.text == "Original"
     assert comment.author == author
 
 
-def test_authenticated_user_can_read_and_comment_on_another_users_task(
+def test_comment_list_contains_only_current_users_comments(
     api_client, creator, django_user_model
 ):
     other = django_user_model.objects.create_user(username="other")
-    task = TaskModel.objects.create(title="Other task", creator=other)
-    existing = CommentModel.objects.create(task=task, author=other, text="Existing")
+    task = TaskModel.objects.create(title="Other task", creator=other, assignee=creator)
+    CommentModel.objects.create(task=task, author=other, text="Existing")
 
     listed = api_client.get(reverse("comment-list"))
     created = api_client.post(
@@ -197,9 +197,13 @@ def test_authenticated_user_can_read_and_comment_on_another_users_task(
     )
 
     assert listed.status_code == 200
-    assert listed.data["results"][0]["id"] == existing.pk
+    assert listed.data["results"] == []
     assert created.status_code == 201
     assert created.data["author"] == creator.pk
+    assert (
+        api_client.get(reverse("comment-list")).data["results"][0]["id"]
+        == (created.data["id"])
+    )
 
 
 @pytest.mark.parametrize(

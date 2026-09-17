@@ -43,6 +43,20 @@ class TasksSerializer(serializers.ModelSerializer):
         return assignee
 
 
+class TaskStatusSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=TaskModel.Status.choices)
+
+    def validate(self, attrs):
+        if set(self.initial_data) - {"status"}:
+            raise serializers.ValidationError("Only the status field is allowed.")
+        return attrs
+
+    def update(self, instance, validated_data):
+        instance.status = validated_data["status"]
+        instance.save(update_fields=("status", "updated_at"))
+        return instance
+
+
 class CommentSerializer(serializers.ModelSerializer):
     """
     Serializer for comments

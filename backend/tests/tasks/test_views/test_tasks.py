@@ -272,7 +272,7 @@ def test_anonymous_requests_are_rejected(task, method, detail):
     assert TaskModel.objects.count() == 1
 
 
-def test_other_user_can_read_tasks(task, django_user_model):
+def test_unrelated_user_cannot_read_tasks(task, django_user_model):
     client = APIClient()
     client.force_authenticate(
         user=django_user_model.objects.create_user(username="reader")
@@ -282,8 +282,8 @@ def test_other_user_can_read_tasks(task, django_user_model):
     detail = client.get(reverse("task-detail", args=[task.pk]))
 
     assert task_list.status_code == 200
-    assert task_list.data["results"][0]["id"] == task.pk
-    assert detail.status_code == 200
+    assert task_list.data["results"] == []
+    assert detail.status_code == 404
 
 
 @pytest.mark.parametrize("method", ["put", "delete"])
@@ -297,7 +297,7 @@ def test_other_user_cannot_change_or_delete_task(task, django_user_model, method
         reverse("task-detail", args=[task.pk]), {"title": "Changed"}, format="json"
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 404
     task.refresh_from_db()
     assert task.title == "First task"
 

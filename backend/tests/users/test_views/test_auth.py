@@ -192,7 +192,7 @@ def test_jwt_does_not_bypass_ownership(jwt_client, creator, resource, method):
         format="json",
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 404
     task.refresh_from_db()
     comment.refresh_from_db()
     assert task.title == "Other task"

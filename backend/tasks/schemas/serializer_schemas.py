@@ -24,6 +24,14 @@ delete_task = {
     "description": "Deleting a task",
 }
 
+set_task_status = {
+    "summary": "Change task status",
+    "description": (
+        "The creator or current assignee can change the task status. "
+        "Only the status field is accepted."
+    ),
+}
+
 
 # Comments
 list_comment = {

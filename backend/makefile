@@ -1,8 +1,10 @@
-.PHONY: env up down build restart logs
+.PHONY: env up down build restart logs test lint lint-fix format format-check
 
 ENV_FILE := .env
 ENV_EXAMPLE := .env.example
 COMPOSE_FILE := ../docker/docker-compose.yml
+TEST_DB_HOST ?= 127.0.0.1
+TEST_ARGS ?= -v
 
 # Create .env from .env.example
 env:
@@ -33,6 +35,10 @@ restart: env
 # Logs containers
 logs:
 	docker compose -f $(COMPOSE_FILE) logs -f
+
+# Run tests against a separate PostgreSQL test database
+test:
+	DB_HOST="$(TEST_DB_HOST)" uv run --locked pytest $(TEST_ARGS)
 
 # RUFF
 # Lint check
