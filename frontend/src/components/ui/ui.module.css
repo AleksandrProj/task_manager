@@ -1,0 +1,249 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--color-background);
+}
+
+.danger {
+  background: #b42318;
+  color: #fff;
+}
+.danger:hover:not(:disabled) {
+  background: #912018;
+}
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.required,
+.fieldError {
+  color: var(--color-error);
+}
+
+.control {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+  line-height: 1.5;
+}
+
+.control::placeholder {
+  color: #69778c;
+  opacity: 1;
+}
+.control[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+.control:disabled {
+  background: var(--color-background);
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+textarea.control {
+  min-height: 120px;
+  resize: vertical;
+}
+.hint,
+.fieldError {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.hint {
+  color: var(--color-muted);
+}
+
+.card {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  min-width: 0;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.pageHeading {
+  min-width: 0;
+  flex: 1 1 240px;
+}
+.description {
+  margin: 0.75rem 0 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.alert {
+  padding: 1rem 1.25rem;
+  border: 1px solid;
+  border-radius: var(--radius-control);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.alertTitle {
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+}
+.alertTitle:last-child {
+  margin-bottom: 0;
+}
+.error {
+  color: #912018;
+  background: #fff3f2;
+  border-color: #f5c4bf;
+}
+.success {
+  color: #166534;
+  background: #f0fdf4;
+  border-color: #bbdfc6;
+}
+.info {
+  color: #1e40af;
+  background: #eff6ff;
+  border-color: #c9dcfc;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.neutral {
+  color: #475569;
+  background: #eef2f6;
+}
+.blue {
+  color: #1e40af;
+  background: #eaf2ff;
+}
+.green {
+  color: #166534;
+  background: #eaf8ef;
+}
+.amber {
+  color: #854d0e;
+  background: #fff7d6;
+}
+.red {
+  color: #991b1b;
+  background: #fff0ef;
+}
+
+.emptyState {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: 2rem 0.5rem;
+  text-align: center;
+}
+.emptyState h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.emptyState .description {
+  margin: 0;
+  max-width: 42ch;
+}
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  color: var(--color-primary);
+  background: #eff6ff;
+}
+.loadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1rem;
+  color: var(--color-muted);
+}
+.spinner {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+  .button {
+    transition: none;
+  }
+}

@@ -1,4 +1,4 @@
-
+# BACKEND
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -85,12 +85,15 @@ celerybeat-schedule
 
 # dotenv
 .env
+.env.*
+!.env.example
 
 # virtualenv
 .venv
 venv/
 ENV/
 .vscode
+!.vscode/extensions.json
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -112,9 +115,23 @@ media/
 *.db
 *.pid
 
-# Ignore Django Migrations in Development if you are working on team
+# FRONTEND
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Only for Development only
-# **/migrations/**
-# !**/migrations
-# !**/migrations/__init__.py
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

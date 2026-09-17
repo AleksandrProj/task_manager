@@ -1,0 +1,28 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.stack {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.heading {
+  font-size: 1.1rem;
+  margin: 0 0 1.5rem;
+}
+.bottomCard {
+  margin-top: 1.5rem;
+}
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

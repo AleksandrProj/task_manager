@@ -1,0 +1,121 @@
+.listCard {
+  padding: 0;
+  overflow: hidden;
+}
+
+.columns,
+.task {
+  display: grid;
+  grid-template-columns:
+    minmax(14rem, 2.2fr) minmax(7rem, 1fr) minmax(7rem, 1fr)
+    minmax(9rem, 1.2fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.columns {
+  padding: 0.9rem clamp(1rem, 3vw, 1.5rem);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-muted);
+  background: var(--color-background);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task {
+  min-width: 0;
+  padding: 1.1rem clamp(1rem, 3vw, 1.5rem);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.task:last-child {
+  border-bottom: 0;
+}
+
+.title,
+.assignee {
+  min-width: 0;
+}
+
+.title {
+  display: grid;
+  gap: 0.3rem;
+  font-weight: 600;
+}
+
+.title small {
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  font-weight: 400;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assignee {
+  color: var(--color-muted);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.pageButton {
+  min-height: 44px;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pageButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 680px) {
+  .columns {
+    display: none;
+  }
+
+  .task {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem 1rem;
+  }
+
+  .task > div::before {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--color-muted);
+    content: attr(data-label);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .task .title {
+    grid-column: 1 / -1;
+  }
+}

@@ -1,0 +1,87 @@
+.app {
+  min-height: 100dvh;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem max(1.25rem, calc((100vw - 1040px) / 2));
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+.mark {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6rem;
+  color: #fff;
+  background: var(--color-primary);
+}
+.nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  gap: 0.5rem;
+}
+.username {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.5rem;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+.nav a:hover {
+  background: var(--color-background);
+}
+.nav a[aria-current='page'] {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem;
+  overflow-wrap: anywhere;
+}
+.skipLink {
+  position: absolute;
+  top: -5rem;
+  left: 1rem;
+  padding: 0.75rem;
+  background: var(--color-surface);
+  z-index: 10;
+}
+.skipLink:focus {
+  top: 1rem;
+}
+@media (max-width: 480px) {
+  .header {
+    gap: 0.5rem;
+  }
+  .main {
+    padding-top: 2rem;
+  }
+}
