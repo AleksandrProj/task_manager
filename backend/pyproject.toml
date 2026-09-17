@@ -8,12 +8,12 @@ dependencies = [
     "drf-spectacular>=0.30.0",
     "gunicorn>=26.2.0",
     "psycopg[binary]>=3.3.5",
-    "pytest>=9.1.1",
     "python-dotenv>=1.2.3",
 ]
 
 [dependency-groups]
 dev = [
+    "pytest>=9.1.1",
     "pytest-django>=4.14.0",
     "ruff>=0.16.7",
 ]
@@ -48,11 +48,10 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.ruff.lint.per-file-ignores]
-"tasks/tests.py" = ["S101"]
-"tasks/test_*.py" = ["S101"]
+"tests/**/test_*.py" = ["S101"]
 "**/migrations/*.py" = ["RUF012"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "app.settings"
-python_files = ["test_*.py", "tests.py"]
-testpaths = ["tasks"]
+python_files = ["test_*.py"]
+testpaths = ["tests"]

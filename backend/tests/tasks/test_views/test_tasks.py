@@ -2,16 +2,9 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from tasks.models import CommentModel, TasksModel
+from tasks.models import CommentModel, TaskModel
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.fixture
-def api_client(creator):
-    client = APIClient()
-    client.force_authenticate(user=creator)
-    return client
 
 
 def test_empty_task_list(api_client):
@@ -22,8 +15,8 @@ def test_empty_task_list(api_client):
 
 
 def test_task_list_is_paginated_and_ordered(api_client, creator):
-    tasks = TasksModel.objects.bulk_create(
-        [TasksModel(title=f"Task {index}", creator=creator) for index in range(21)]
+    tasks = TaskModel.objects.bulk_create(
+        [TaskModel(title=f"Task {index}", creator=creator) for index in range(21)]
     )
 
     response = api_client.get(reverse("task-list"))
@@ -46,7 +39,7 @@ def test_create_task_assigns_author_and_defaults(api_client, creator):
     )
 
     assert response.status_code == 201
-    task = TasksModel.objects.get(pk=response.data["id"])
+    task = TaskModel.objects.get(pk=response.data["id"])
     assert task.title == "New task"
     assert task.creator == creator
     assert response.data["creator"] == creator.pk
@@ -92,10 +85,10 @@ def test_create_task_rejects_invalid_data(api_client, payload, field):
 
     assert response.status_code == 400
     assert field in response.data
-    assert not TasksModel.objects.exists()
+    assert not TaskModel.objects.exists()
 
 
-@pytest.mark.parametrize("method", ["post", "patch"])
+@pytest.mark.parametrize("method", ["post", "put"])
 @pytest.mark.parametrize("assignee_kind", ["creator", "inactive", "missing"])
 def test_api_rejects_invalid_assignee(
     api_client, task, creator, django_user_model, method, assignee_kind
@@ -120,7 +113,7 @@ def test_api_rejects_invalid_assignee(
 
     assert response.status_code == 400
     assert "assignee" in response.data
-    assert TasksModel.objects.count() == 1
+    assert TaskModel.objects.count() == 1
     task.refresh_from_db()
     assert task.title == "First task"
     assert task.assignee is None
@@ -166,9 +159,21 @@ def test_put_requires_title(api_client, task):
     assert task.status == "new"
 
 
-def test_patch_changes_only_supplied_fields(api_client, task):
+def test_task_patch_is_not_supported(api_client, task):
     response = api_client.patch(
         reverse("task-detail", args=[task.pk]), {"status": "done"}, format="json"
+    )
+
+    assert response.status_code == 405
+    task.refresh_from_db()
+    assert task.status == "new"
+
+
+def test_put_can_update_status(api_client, task):
+    response = api_client.put(
+        reverse("task-detail", args=[task.pk]),
+        {"title": task.title, "status": "done"},
+        format="json",
     )
 
     assert response.status_code == 200
@@ -178,12 +183,14 @@ def test_patch_changes_only_supplied_fields(api_client, task):
     assert task.priority == "low"
 
 
-def test_patch_can_clear_assignee(api_client, task, django_user_model):
+def test_put_can_clear_assignee(api_client, task, django_user_model):
     task.assignee = django_user_model.objects.create_user(username="assignee")
     task.save()
 
-    response = api_client.patch(
-        reverse("task-detail", args=[task.pk]), {"assignee": None}, format="json"
+    response = api_client.put(
+        reverse("task-detail", args=[task.pk]),
+        {"title": task.title, "assignee": None},
+        format="json",
     )
 
     assert response.status_code == 200
@@ -191,7 +198,7 @@ def test_patch_can_clear_assignee(api_client, task, django_user_model):
     assert task.assignee is None
 
 
-@pytest.mark.parametrize("method", ["post", "patch"])
+@pytest.mark.parametrize("method", ["post", "put"])
 def test_client_cannot_set_author_id_or_timestamps(
     api_client, task, creator, django_user_model, method
 ):
@@ -214,12 +221,12 @@ def test_client_cannot_set_author_id_or_timestamps(
     )
 
     assert response.status_code == (201 if method == "post" else 200)
-    saved_task = TasksModel.objects.get(pk=response.data["id"])
+    saved_task = TaskModel.objects.get(pk=response.data["id"])
     assert saved_task.creator == creator
     assert saved_task.pk != 999999
     assert saved_task.created_at.year != 2000
     assert saved_task.updated_at.year != 2000
-    if method == "patch":
+    if method == "put":
         assert saved_task.pk == task.pk
         assert saved_task.created_at == task.created_at
 
@@ -230,11 +237,11 @@ def test_delete_task_removes_comments(api_client, task, creator):
     response = api_client.delete(reverse("task-detail", args=[task.pk]))
 
     assert response.status_code == 204
-    assert not TasksModel.objects.filter(pk=task.pk).exists()
+    assert not TaskModel.objects.filter(pk=task.pk).exists()
     assert not CommentModel.objects.exists()
 
 
-@pytest.mark.parametrize("method", ["get", "put", "patch", "delete"])
+@pytest.mark.parametrize("method", ["get", "put", "delete"])
 def test_missing_task_returns_404(api_client, method):
     response = getattr(api_client, method)(
         reverse("task-detail", args=[999999]),
@@ -252,7 +259,6 @@ def test_missing_task_returns_404(api_client, method):
         ("post", False),
         ("get", True),
         ("put", True),
-        ("patch", True),
         ("delete", True),
     ],
 )
@@ -263,7 +269,7 @@ def test_anonymous_requests_are_rejected(task, method, detail):
     assert response.status_code == 403
     task.refresh_from_db()
     assert task.title == "First task"
-    assert TasksModel.objects.count() == 1
+    assert TaskModel.objects.count() == 1
 
 
 def test_other_user_can_read_tasks(task, django_user_model):
@@ -280,7 +286,7 @@ def test_other_user_can_read_tasks(task, django_user_model):
     assert detail.status_code == 200
 
 
-@pytest.mark.parametrize("method", ["put", "patch", "delete"])
+@pytest.mark.parametrize("method", ["put", "delete"])
 def test_other_user_cannot_change_or_delete_task(task, django_user_model, method):
     client = APIClient()
     client.force_authenticate(
@@ -301,7 +307,7 @@ def test_session_authentication_works_and_requires_csrf_for_writes(creator, task
     client.force_login(creator)
 
     response = client.get(reverse("task-list"))
-    write = client.patch(
+    write = client.put(
         reverse("task-detail", args=[task.pk]), {"title": "Changed"}, format="json"
     )
 

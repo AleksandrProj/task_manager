@@ -1,12 +1,12 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from tasks.models import TasksModel
+from tasks.models import CommentModel, TaskModel
 
 
 class TasksSerializer(serializers.ModelSerializer):
     """
-    Task data with server-controlled authorship and timestamps.
+    Serializer for tasks
     """
 
     assignee = serializers.PrimaryKeyRelatedField(
@@ -16,7 +16,7 @@ class TasksSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = TasksModel
+        model = TaskModel
         fields = (
             "id",
             "title",
@@ -41,3 +41,21 @@ class TasksSerializer(serializers.ModelSerializer):
                 "The task creator cannot be its assignee."
             )
         return assignee
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for comments
+    """
+
+    class Meta:
+        model = CommentModel
+        fields = (
+            "id",
+            "text",
+            "task",
+            "author",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "author", "created_at", "updated_at")

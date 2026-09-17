@@ -5,21 +5,21 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 
-from tasks.models import CommentModel, TasksModel
+from tasks.models import CommentModel, TaskModel
 
 pytestmark = pytest.mark.django_db
 
 
 def test_task_can_be_created_without_assignee_or_description(creator):
-    task = TasksModel(title="First task", creator=creator)
+    task = TaskModel(title="First task", creator=creator)
     task.full_clean()
     task.save()
     task.refresh_from_db()
 
     assert task.assignee is None
     assert task.description == ""
-    assert task.status == TasksModel.Status.NEW
-    assert task.priority == TasksModel.Priority.LOW
+    assert task.status == TaskModel.Status.NEW
+    assert task.priority == TaskModel.Priority.LOW
     assert task.created_at is not None
     assert task.updated_at is not None
 
@@ -54,7 +54,7 @@ def test_deleting_assignee_keeps_task(task, django_user_model):
 
 @pytest.mark.parametrize("existing", [False, True])
 def test_task_rejects_creator_as_assignee(creator, existing):
-    task = TasksModel(title="First task", creator=creator)
+    task = TaskModel(title="First task", creator=creator)
     if existing:
         task.save()
     task.assignee = creator
@@ -80,7 +80,7 @@ def test_task_can_be_assigned_to_another_user(task, django_user_model):
 def test_database_rejects_creation_with_creator_as_assignee(creator):
     with pytest.raises(IntegrityError, match="task_assignee_not_creator"):
         with transaction.atomic():
-            TasksModel.objects.create(
+            TaskModel.objects.create(
                 title="Invalid task", creator=creator, assignee=creator
             )
 
@@ -98,7 +98,7 @@ def test_database_rejects_saving_creator_as_assignee(task, creator):
 def test_database_rejects_updating_assignee_to_creator(task, creator):
     with pytest.raises(IntegrityError, match="task_assignee_not_creator"):
         with transaction.atomic():
-            TasksModel.objects.filter(pk=task.pk).update(assignee=creator)
+            TaskModel.objects.filter(pk=task.pk).update(assignee=creator)
 
     task.refresh_from_db()
     assert task.assignee is None
@@ -108,12 +108,12 @@ def test_task_creator_cannot_be_deleted(task, creator):
     with pytest.raises(ProtectedError):
         creator.delete()
 
-    assert TasksModel.objects.filter(pk=task.pk).exists()
+    assert TaskModel.objects.filter(pk=task.pk).exists()
 
 
 def test_deleting_task_removes_only_its_comments(task, creator):
     CommentModel.objects.create(task=task, author=creator, text="First comment")
-    other_task = TasksModel.objects.create(title="Other task", creator=creator)
+    other_task = TaskModel.objects.create(title="Other task", creator=creator)
     other_comment = CommentModel.objects.create(
         task=other_task, author=creator, text="Other comment"
     )
@@ -146,12 +146,12 @@ def test_task_can_be_completed_without_changing_creation_date(task, monkeypatch)
     updated_at = created_at + timedelta(seconds=1)
     monkeypatch.setattr("django.utils.timezone.now", lambda: updated_at)
 
-    task.status = TasksModel.Status.DONE
+    task.status = TaskModel.Status.DONE
     task.full_clean()
     task.save()
     task.refresh_from_db()
 
-    assert task.status == TasksModel.Status.DONE
+    assert task.status == TaskModel.Status.DONE
     assert task.created_at == created_at
     assert task.updated_at == updated_at
 

@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
-class TasksModel(models.Model):
+class TaskModel(models.Model):
     """A task with an author and an optional assignee."""
 
     class Status(models.TextChoices):
@@ -77,7 +77,7 @@ class CommentModel(models.Model):
 
     text = models.CharField("Text comment", max_length=500)
     task = models.ForeignKey(
-        TasksModel,
+        TaskModel,
         verbose_name="Comment for task",
         on_delete=models.CASCADE,
         related_name="comments",

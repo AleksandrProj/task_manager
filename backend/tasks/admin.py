@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from tasks.models import CommentModel, TasksModel
+from tasks.models import CommentModel, TaskModel
 
-admin.site.register(TasksModel)
+admin.site.register(TaskModel)
 admin.site.register(CommentModel)
