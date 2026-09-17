@@ -9,7 +9,12 @@ from rest_framework.response import Response
 from tasks.models import CommentModel, TaskModel
 from tasks.permissions import IsCommentAuthorOrReadOnly, IsTaskCreatorOrAssignee
 from tasks.schemas import serializer_schemas
-from tasks.serializers import CommentSerializer, TasksSerializer, TaskStatusSerializer
+from tasks.serializers import (
+    CommentFilterSerializer,
+    CommentSerializer,
+    TasksSerializer,
+    TaskStatusSerializer,
+)
 
 
 class TaskPagination(PageNumberPagination):
@@ -105,7 +110,16 @@ class CommentViewSet(
     http_method_names = ("get", "post", "put", "delete")
 
     def get_queryset(self):
-        return self.queryset.filter(author=self.request.user)
+        queryset = self.queryset.filter(
+            Q(task__creator=self.request.user) | Q(task__assignee=self.request.user)
+        )
+        if self.action == "list":
+            filters = CommentFilterSerializer(data=self.request.query_params.dict())
+            filters.is_valid(raise_exception=True)
+            task_id = filters.validated_data.get("task")
+            if task_id is not None:
+                queryset = queryset.filter(task_id=task_id)
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

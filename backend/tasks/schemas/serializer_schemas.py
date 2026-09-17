@@ -1,7 +1,12 @@
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse
 
 from app.schemas import error_responses, example_response
-from tasks.serializers import CommentSerializer, TasksSerializer, TaskStatusSerializer
+from tasks.serializers import (
+    CommentFilterSerializer,
+    CommentSerializer,
+    TasksSerializer,
+    TaskStatusSerializer,
+)
 
 TASK = {
     "id": 1,
@@ -157,18 +162,22 @@ set_task_status = {
 }
 
 list_comment = {
-    "summary": "List my comments",
-    "description": "Only comments authored by the current user, oldest first. "
+    "summary": "List comments on accessible tasks",
+    "description": "All comments on tasks created by or assigned to the current "
+    "user, oldest first. Optionally filter by task ID with ?task=1. Hidden or "
+    "missing tasks return an empty list. Invalid task IDs return 400. "
     "10 comments per page. Use the page query parameter or next/previous links.",
+    "parameters": [CommentFilterSerializer],
     "responses": {
         200: example_response(CommentSerializer, COMMENT, "Paginated comment list."),
-        **error_responses(401, 404),
+        **error_responses(400, 401, 404),
     },
 }
 
 create_comment = {
     "summary": "Create a comment",
-    "description": "Both text and an existing task ID are required. Text must not be "
+    "description": "The task creator or current assignee can comment. Both text "
+    "and an accessible task ID are required. Text must not be "
     "blank and may contain up to 500 characters. The server sets author and dates. "
     "Replace the example task ID with an existing task ID.",
     "examples": [
@@ -191,8 +200,9 @@ create_comment = {
 update_comment = {
     "summary": "Edit a comment",
     "description": "Author only. PUT requires both text and task. The task reference "
-    "can also be changed. Author, ID and timestamps are read-only. Other authors' "
-    "comments are hidden and return 404.",
+    "can also be changed to another accessible task. Author, ID and timestamps "
+    "are read-only. Editing another author's comment returns 403. Comments on "
+    "inaccessible tasks return 404, even for their original author.",
     "examples": [
         OpenApiExample(
             "Edit comment",
@@ -217,7 +227,8 @@ update_comment = {
 delete_comment = {
     "summary": "Delete a comment",
     "description": "Author only. The related task is preserved. No request or "
-    "response body is used. Other authors' comments return 404.",
+    "response body is used. Deleting another author's comment returns 403. "
+    "Comments on inaccessible tasks return 404, even for their original author.",
     "responses": {
         204: OpenApiResponse(description="Comment deleted. No response body."),
         **error_responses(401, 403, 404),

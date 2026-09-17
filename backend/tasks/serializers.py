@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from rest_framework import serializers
 
 from tasks.models import CommentModel, TaskModel
@@ -57,10 +58,26 @@ class TaskStatusSerializer(serializers.Serializer):
         return instance
 
 
+class CommentFilterSerializer(serializers.Serializer):
+    task = serializers.IntegerField(
+        required=False,
+        min_value=1,
+        help_text="Filter by task ID. Hidden or missing tasks return an empty list.",
+    )
+
+
 class CommentSerializer(serializers.ModelSerializer):
     """
     Serializer for comments
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request is not None:
+            self.fields["task"].queryset = TaskModel.objects.filter(
+                Q(creator_id=request.user.pk) | Q(assignee_id=request.user.pk)
+            )
 
     class Meta:
         model = CommentModel

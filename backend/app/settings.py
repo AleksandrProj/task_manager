@@ -180,7 +180,7 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": (
         "Task manager REST API. Obtain tokens at /api/auth/token/, then use "
         "Authorize > jwtAuth with the access token. Tasks are visible to their "
-        "creator and current assignee; comments are visible to their author. "
+        "creator and current assignee; both can read all comments on those tasks. "
         "Examples use illustrative IDs and placeholder credentials/tokens."
     ),
     "VERSION": "1.0.0",
