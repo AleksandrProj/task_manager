@@ -14,11 +14,12 @@ import os
 from datetime import timedelta
 
 import dotenv
-
-dotenv.load_dotenv()
+from django.core.exceptions import ImproperlyConfigured
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
+
+dotenv.load_dotenv(os.path.join(PROJECT_DIR, ".env"))
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,11 +27,17 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET")
+if not SECRET_KEY:
+    raise ImproperlyConfigured("Set DJANGO_SECRET in backend/.env or the environment.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "false").strip().lower() in {"true", "1", "yes", "on"}
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",")
+    if host.strip()
+]
 
 
 # Application definition
@@ -87,7 +94,7 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME", default="task_manager"),
         "USER": os.getenv("DB_USER", default="root"),
         "PASSWORD": os.getenv("DB_PASSWORD", default="root"),
-        "HOST": os.getenv("DB_HOST", default="postgres"),
+        "HOST": os.getenv("DB_HOST", default="127.0.0.1"),
         "PORT": os.getenv("DB_PORT", default="5432"),
     }
 }

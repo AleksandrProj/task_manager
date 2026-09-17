@@ -28,10 +28,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-editable
 
-# Collect static
-RUN python manage.py collectstatic --noinput
-
 EXPOSE 8000
 
-# Run app
-CMD set -xe; python manage.py migrate --no-input; python manage.py runserver 0.0.0.0:8000
+# Compose waits for PostgreSQL. Stop startup if migrations fail.
+CMD ["sh", "-c", "python manage.py migrate --no-input && exec python manage.py runserver 0.0.0.0:8000"]
