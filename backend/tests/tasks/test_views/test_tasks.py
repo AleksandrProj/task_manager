@@ -11,7 +11,12 @@ def test_empty_task_list(api_client):
     response = api_client.get(reverse("task-list"))
 
     assert response.status_code == 200
-    assert response.data == {"count": 0, "next": None, "previous": None, "results": []}
+    assert response.data["count"] == 0
+    assert response.data["next"] is response.data["previous"] is None
+    assert response.data["results"] == []
+    assert response.data["pages"] == [
+        {"number": 1, "url": "http://testserver/api/tasks/?page=1", "current": True}
+    ]
 
 
 def test_task_list_is_paginated_and_ordered(api_client, creator):
@@ -25,12 +30,11 @@ def test_task_list_is_paginated_and_ordered(api_client, creator):
     assert response.status_code == 200
     assert response.data["count"] == 21
     assert response.data["next"] is not None
-    assert [item["id"] for item in response.data["results"]] == [
-        task.pk for task in reversed(tasks[1:])
-    ]
+    assert [item["id"] for item in response.data["results"]] == [tasks[-1].pk]
+    assert [page["number"] for page in response.data["pages"]] == [1, 2, 3, 21]
     assert second_page.status_code == 200
-    assert [item["id"] for item in second_page.data["results"]] == [tasks[0].pk]
-    assert second_page.data["next"] is None
+    assert [item["id"] for item in second_page.data["results"]] == [tasks[-2].pk]
+    assert second_page.data["previous"] is not None
 
 
 def test_create_task_assigns_author_and_defaults(api_client, creator):

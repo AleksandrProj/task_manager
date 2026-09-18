@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.utils.urls import replace_query_param
 
 from tasks.models import CommentModel, TaskModel
 from tasks.permissions import IsCommentAuthorOrReadOnly, IsTaskCreatorOrAssignee
@@ -17,17 +18,58 @@ from tasks.serializers import (
 )
 
 
-class TaskPagination(PageNumberPagination):
+class LinkPagination(PageNumberPagination):
     """
-    Pagination for tasks
+    Return the page links that the client can render without calculations.
     """
 
-    page_size = 20
+    def get_paginated_response_schema(self, schema):
+        response_schema = super().get_paginated_response_schema(schema)
+        response_schema["properties"]["pages"] = serializer_schemas.pagination
+        response_schema["required"].append("pages")
+        return response_schema
+
+    def get_paginated_response(self, data):
+        return Response(
+            {
+                "count": self.page.paginator.count,
+                "next": self.get_next_link(),
+                "previous": self.get_previous_link(),
+                "pages": self.get_page_links(),
+                "results": data,
+            }
+        )
+
+    def get_page_links(self):
+        current_page = self.page.number
+        total_pages = self.page.paginator.num_pages
+        visible_pages = {
+            1,
+            total_pages,
+            *range(max(1, current_page - 2), min(total_pages, current_page + 2) + 1),
+        }
+        base_url = self.request.build_absolute_uri()
+        return [
+            {
+                "number": number,
+                "url": replace_query_param(base_url, self.page_query_param, number),
+                "current": number == current_page,
+            }
+            for number in sorted(visible_pages)
+        ]
 
 
-class CommentPagination(PageNumberPagination):
+class TaskPagination(LinkPagination):
     """
-    Pagination for comments
+    Pagination for tasks.
+    """
+
+    page_size = 10
+
+
+class CommentPagination(LinkPagination):
+    """
+    Pagination for comments.
     """
 
     page_size = 10

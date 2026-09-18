@@ -32,7 +32,7 @@ COMMENT = {
 list_task = {
     "summary": "List my tasks",
     "description": "Tasks created by or assigned to the current user, newest first. "
-    "20 tasks per page. Use the page query parameter or the next/previous links.",
+    "Use the server-provided next, previous and pages links for navigation.",
     "responses": {
         200: example_response(TasksSerializer, TASK, "Paginated task list."),
         **error_responses(401, 404),
@@ -166,7 +166,7 @@ list_comment = {
     "description": "All comments on tasks created by or assigned to the current "
     "user, oldest first. Optionally filter by task ID with ?task=1. Hidden or "
     "missing tasks return an empty list. Invalid task IDs return 400. "
-    "10 comments per page. Use the page query parameter or next/previous links.",
+    "Use the server-provided next, previous and pages links for navigation.",
     "parameters": [CommentFilterSerializer],
     "responses": {
         200: example_response(CommentSerializer, COMMENT, "Paginated comment list."),
@@ -234,3 +234,23 @@ delete_comment = {
         **error_responses(401, 403, 404),
     },
 }
+
+pagination = {
+            "type": "array",
+            "example": [
+                {
+                    "number": 1,
+                    "url": "http://api.example.org/tasks/?page=1",
+                    "current": True,
+                }
+            ],
+            "items": {
+                "type": "object",
+                "required": ["number", "url", "current"],
+                "properties": {
+                    "number": {"type": "integer", "minimum": 1},
+                    "url": {"type": "string", "format": "uri"},
+                    "current": {"type": "boolean"},
+                },
+            },
+        }
