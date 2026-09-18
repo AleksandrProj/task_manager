@@ -54,5 +54,6 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "app.settings"
+addopts = "--reuse-db"
 python_files = ["test_*.py"]
 testpaths = ["tests"]

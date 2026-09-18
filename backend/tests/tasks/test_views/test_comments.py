@@ -80,10 +80,12 @@ def test_comment_list_is_paginated_and_ordered(api_client, task, creator):
     assert response.status_code == 200
     assert response.data["count"] == 11
     assert response.data["next"] is not None
-    assert [item["id"] for item in response.data["results"]] == [comments[0].pk]
-    assert [page["number"] for page in response.data["pages"]] == [1, 2, 3, 11]
+    assert [item["id"] for item in response.data["results"]] == [
+        comment.pk for comment in comments[:10]
+    ]
+    assert [page["number"] for page in response.data["pages"]] == [1, 2]
     assert second_page.status_code == 200
-    assert [item["id"] for item in second_page.data["results"]] == [comments[1].pk]
+    assert [item["id"] for item in second_page.data["results"]] == [comments[10].pk]
     assert second_page.data["previous"] is not None
 
 
@@ -206,7 +208,7 @@ def test_assignee_can_read_other_authors_comments_and_reply(
     assert created.data["author"] == creator.pk
     assert [
         item["id"] for item in api_client.get(reverse("comment-list")).data["results"]
-    ] == [existing.pk]
+    ] == [existing.pk, created.data["id"]]
 
 
 @pytest.mark.parametrize(
@@ -284,7 +286,9 @@ def test_creator_reads_all_participants_comments_but_not_other_tasks(
 
     assert response.status_code == 200
     assert response.data["count"] == 2
-    assert [item["id"] for item in response.data["results"]] == [comments[0].pk]
+    assert [item["id"] for item in response.data["results"]] == [
+        comment.pk for comment in comments
+    ]
 
 
 def test_task_filter_is_applied_before_pagination(api_client, task, creator):
@@ -302,8 +306,10 @@ def test_task_filter_is_applied_before_pagination(api_client, task, creator):
     assert first.status_code == second.status_code == 200
     assert first.data["count"] == second.data["count"] == 11
     assert f"task={task.pk}" in first.data["next"]
-    assert [item["id"] for item in first.data["results"]] == [comments[0].pk]
-    assert [item["id"] for item in second.data["results"]] == [comments[1].pk]
+    assert [item["id"] for item in first.data["results"]] == [
+        comment.pk for comment in comments[:10]
+    ]
+    assert [item["id"] for item in second.data["results"]] == [comments[-1].pk]
 
 
 @pytest.mark.parametrize("task_id", ["invalid", "", "0", "-1", "1.5"])

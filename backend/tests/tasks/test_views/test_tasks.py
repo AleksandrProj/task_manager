@@ -30,10 +30,14 @@ def test_task_list_is_paginated_and_ordered(api_client, creator):
     assert response.status_code == 200
     assert response.data["count"] == 21
     assert response.data["next"] is not None
-    assert [item["id"] for item in response.data["results"]] == [tasks[-1].pk]
-    assert [page["number"] for page in response.data["pages"]] == [1, 2, 3, 21]
+    assert [item["id"] for item in response.data["results"]] == [
+        task.pk for task in reversed(tasks[11:])
+    ]
+    assert [page["number"] for page in response.data["pages"]] == [1, 2, 3]
     assert second_page.status_code == 200
-    assert [item["id"] for item in second_page.data["results"]] == [tasks[-2].pk]
+    assert [item["id"] for item in second_page.data["results"]] == [
+        task.pk for task in reversed(tasks[1:11])
+    ]
     assert second_page.data["previous"] is not None
 
 

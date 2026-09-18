@@ -236,21 +236,21 @@ delete_comment = {
 }
 
 pagination = {
-            "type": "array",
-            "example": [
-                {
-                    "number": 1,
-                    "url": "http://api.example.org/tasks/?page=1",
-                    "current": True,
-                }
-            ],
-            "items": {
-                "type": "object",
-                "required": ["number", "url", "current"],
-                "properties": {
-                    "number": {"type": "integer", "minimum": 1},
-                    "url": {"type": "string", "format": "uri"},
-                    "current": {"type": "boolean"},
-                },
-            },
+    "type": "array",
+    "example": [
+        {
+            "number": 1,
+            "url": "http://api.example.org/tasks/?page=1",
+            "current": True,
         }
+    ],
+    "items": {
+        "type": "object",
+        "required": ["number", "url", "current"],
+        "properties": {
+            "number": {"type": "integer", "minimum": 1},
+            "url": {"type": "string", "format": "uri"},
+            "current": {"type": "boolean"},
+        },
+    },
+}
