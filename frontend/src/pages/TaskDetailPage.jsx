@@ -251,7 +251,7 @@ export default function TaskDetailPage() {
         description={task ? 'Подробная информация о задаче.' : undefined}
         actions={
           <>
-            {task?.creator === user?.id && (
+            {(task?.creator === user?.id || task?.assignee === user?.id) && (
               <ButtonLink to={`/tasks/${task.id}/edit`}>
                 Редактировать
               </ButtonLink>

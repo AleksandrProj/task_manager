@@ -2,9 +2,9 @@ import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import AppLayout from './components/AppLayout.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
-import PlaceholderPage from './pages/PlaceholderPage.jsx'
 import TasksPage from './pages/TasksPage.jsx'
 import AddTasksPage from './pages/AddTasksPage.jsx'
+import EditTaskPage from './pages/EditTaskPage.jsx'
 import TaskDetailPage from './pages/TaskDetailPage.jsx'
 import LoadingState from './components/ui/LoadingState.jsx'
 import LoginPage from './pages/LoginPage.jsx'
@@ -38,15 +38,7 @@ export default function App() {
           <Route path="tasks" element={<TasksPage />} />
           <Route path="tasks/new" element={<AddTasksPage />} />
           <Route path="tasks/:id" element={<TaskDetailPage />} />
-          <Route
-            path="tasks/:id/edit"
-            element={
-              <PlaceholderPage
-                title="Редактирование задачи"
-                description="Измените описание, приоритет или исполнителя."
-              />
-            }
-          />
+          <Route path="tasks/:id/edit" element={<EditTaskPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>
