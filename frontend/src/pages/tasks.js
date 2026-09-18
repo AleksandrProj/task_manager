@@ -1,5 +1,3 @@
-export const TASKS_PER_PAGE = 20
-
 const statuses = {
   new: { label: 'Новая', tone: 'blue' },
   in_progress: { label: 'В работе', tone: 'amber' },
@@ -10,15 +8,6 @@ const priorities = {
   low: { label: 'Низкий', tone: 'neutral' },
   medium: { label: 'Средний', tone: 'amber' },
   high: { label: 'Высокий', tone: 'red' },
-}
-
-export function getPageNumber(value) {
-  const page = Number(value)
-  return Number.isInteger(page) && page > 0 ? page : 1
-}
-
-export function getTaskPagePath(page) {
-  return `/tasks/?page=${page}`
 }
 
 export function getStatus(status) {
@@ -34,8 +23,24 @@ export function getAssigneeName(assignee, users) {
   return users.get(assignee) || `Пользователь №${assignee}`
 }
 
+export function getPaginationPath(link) {
+  if (!link || typeof link !== 'string') return null
+  try {
+    const url = new URL(link, 'http://localhost')
+    if (!url.pathname.startsWith('/api/')) return null
+    return `${url.pathname.slice('/api'.length)}${url.search}`
+  } catch {
+    return null
+  }
+}
+
 export function normalizeTaskPage(data) {
-  if (!data || !Number.isInteger(data.count) || !Array.isArray(data.results)) {
+  if (
+    !data ||
+    !Number.isInteger(data.count) ||
+    !Array.isArray(data.pages) ||
+    !Array.isArray(data.results)
+  ) {
     throw new Error('Сервер вернул список задач в неизвестном формате.')
   }
   return data

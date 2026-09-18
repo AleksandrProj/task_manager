@@ -5,6 +5,7 @@ import NotFoundPage from './pages/NotFoundPage.jsx'
 import PlaceholderPage from './pages/PlaceholderPage.jsx'
 import TasksPage from './pages/TasksPage.jsx'
 import AddTasksPage from './pages/AddTasksPage.jsx'
+import TaskDetailPage from './pages/TaskDetailPage.jsx'
 import LoadingState from './components/ui/LoadingState.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
@@ -36,15 +37,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="tasks" element={<TasksPage />} />
           <Route path="tasks/new" element={<AddTasksPage />} />
-          <Route
-            path="tasks/:id"
-            element={
-              <PlaceholderPage
-                title="Подробности задачи"
-                description="Описание, участники и обсуждение задачи."
-              />
-            }
-          />
+          <Route path="tasks/:id" element={<TaskDetailPage />} />
           <Route
             path="tasks/:id/edit"
             element={

@@ -8,7 +8,7 @@
   display: grid;
   grid-template-columns:
     minmax(14rem, 2.2fr) minmax(7rem, 1fr) minmax(7rem, 1fr)
-    minmax(9rem, 1.2fr);
+    minmax(9rem, 1.2fr) minmax(7rem, auto);
   gap: 1rem;
   align-items: center;
 }
@@ -51,6 +51,16 @@
   font-weight: 600;
 }
 
+.titleLink {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.titleLink:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
 .title small {
   overflow: hidden;
   color: var(--color-muted);
@@ -63,6 +73,16 @@
 
 .assignee {
   color: var(--color-muted);
+}
+
+.rowActions {
+  justify-self: start;
+}
+
+.rowActions :global(.button) {
+  min-height: 36px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
 }
 
 .pagination {
@@ -86,6 +106,27 @@
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+}
+
+.pageNumber {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 0.25rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pageNumber[aria-current='page'] {
+  border-color: var(--color-primary);
+  color: #fff;
+  background: var(--color-primary);
 }
 
 .pageButton:disabled {
@@ -117,5 +158,13 @@
 
   .task .title {
     grid-column: 1 / -1;
+  }
+
+  .rowActions {
+    grid-column: 1 / -1;
+  }
+
+  .rowActions::before {
+    display: none;
   }
 }

@@ -2,19 +2,22 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   getAssigneeName,
-  getPageNumber,
+  getPaginationPath,
   getPriority,
   getStatus,
-  getTaskPagePath,
   normalizeTaskPage,
 } from '../src/pages/tasks.js'
 
-test('pagination uses only positive whole page numbers', () => {
-  assert.equal(getPageNumber('3'), 3)
-  assert.equal(getPageNumber('0'), 1)
-  assert.equal(getPageNumber('1.5'), 1)
-  assert.equal(getPageNumber('text'), 1)
-  assert.equal(getTaskPagePath(2), '/tasks/?page=2')
+test('pagination follows only links returned by the API', () => {
+  assert.equal(
+    getPaginationPath('http://127.0.0.1:8000/api/tasks/?page=2'),
+    '/tasks/?page=2',
+  )
+  assert.equal(
+    getPaginationPath('/api/comments/?task=3&page=2'),
+    '/comments/?task=3&page=2',
+  )
+  assert.equal(getPaginationPath('https://example.com/tasks/?page=2'), null)
 })
 
 test('task values have Russian labels and safe fallbacks', () => {
@@ -34,8 +37,14 @@ test('assignee name uses the user directory with a clear fallback', () => {
   assert.equal(getAssigneeName(8, users), 'Пользователь №8')
 })
 
-test('only paginated task responses are accepted', () => {
-  const page = { count: 1, next: null, previous: null, results: [{ id: 1 }] }
+test('only paginated task responses with server page links are accepted', () => {
+  const page = {
+    count: 1,
+    next: null,
+    previous: null,
+    pages: [{ number: 1, url: '/api/tasks/?page=1', current: true }],
+    results: [{ id: 1 }],
+  }
   assert.equal(normalizeTaskPage(page), page)
   assert.throws(() => normalizeTaskPage({ results: [] }), /неизвестном формате/)
 })

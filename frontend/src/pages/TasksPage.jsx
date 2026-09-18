@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link } from 'react-router'
 import { auth } from '../auth/auth.js'
+import { useAuth } from '../auth/useAuth.js'
 import Alert from '../components/ui/Alert.jsx'
 import Badge from '../components/ui/Badge.jsx'
 import Button, { ButtonLink } from '../components/ui/Button.jsx'
@@ -10,23 +11,23 @@ import LoadingState from '../components/ui/LoadingState.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import {
   getAssigneeName,
-  getPageNumber,
+  getPaginationPath,
   getPriority,
   getStatus,
-  getTaskPagePath,
   normalizeTaskPage,
-  TASKS_PER_PAGE,
 } from './tasks.js'
 import styles from './TasksPage.module.css'
 
-function TaskRow({ task, users }) {
+function TaskRow({ task, users, canDelete, deleting, onDelete }) {
   const status = getStatus(task.status)
   const priority = getPriority(task.priority)
 
   return (
     <li className={styles.task}>
       <div className={styles.title} data-label="Задача">
-        <span>{task.title || 'Без названия'}</span>
+        <Link className={styles.titleLink} to={`/tasks/${task.id}`}>
+          {task.title || 'Без названия'}
+        </Link>
         {task.description && <small>{task.description}</small>}
       </div>
       <div data-label="Статус">
@@ -38,31 +39,45 @@ function TaskRow({ task, users }) {
       <div className={styles.assignee} data-label="Исполнитель">
         {getAssigneeName(task.assignee, users)}
       </div>
+      {canDelete && (
+        <div className={styles.rowActions}>
+          <Button
+            variant="danger"
+            loading={deleting}
+            loadingText="Удаляем…"
+            onClick={() => onDelete(task)}
+          >
+            Удалить
+          </Button>
+        </div>
+      )}
     </li>
   )
 }
 
 export default function TasksPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const page = getPageNumber(searchParams.get('page'))
+  const { user } = useAuth()
+  const [taskPath, setTaskPath] = useState('/tasks/')
   const [taskPage, setTaskPage] = useState(null)
   const [requestError, setRequestError] = useState(null)
   const [retry, setRetry] = useState(0)
   const [users, setUsers] = useState(() => new Map())
+  const [deletingId, setDeletingId] = useState(null)
+  const [actionMessage, setActionMessage] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
     auth
-      .request(getTaskPagePath(page), { signal: controller.signal })
+      .request(taskPath, { signal: controller.signal })
       .then((data) => {
         if (!controller.signal.aborted) {
-          setTaskPage({ page, data: normalizeTaskPage(data) })
+          setTaskPage({ path: taskPath, data: normalizeTaskPage(data) })
         }
       })
       .catch((requestError) => {
         if (!controller.signal.aborted && requestError.name !== 'AbortError') {
           setRequestError({
-            page,
+            path: taskPath,
             retry,
             message: requestError.message || 'Не удалось загрузить задачи.',
           })
@@ -70,7 +85,7 @@ export default function TasksPage() {
       })
 
     return () => controller.abort()
-  }, [page, retry])
+  }, [retry, taskPath])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -100,18 +115,34 @@ export default function TasksPage() {
     return () => controller.abort()
   }, [])
 
-  function goToPage(nextPage) {
-    setSearchParams({ page: String(nextPage) })
+  function goToPage(link) {
+    const path = getPaginationPath(link)
+    if (path) setTaskPath(path)
   }
 
-  const tasks = taskPage?.page === page ? taskPage.data : null
+  async function deleteTask(task) {
+    if (deletingId || !window.confirm(`Удалить задачу «${task.title}»?`)) return
+
+    setDeletingId(task.id)
+    setActionMessage('')
+    try {
+      await auth.request(`/tasks/${task.id}/`, { method: 'DELETE' })
+      if (tasks.results.length === 1 && tasks.previous) goToPage(tasks.previous)
+      else setRetry((value) => value + 1)
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        setActionMessage(error.message || 'Не удалось удалить задачу.')
+      }
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const tasks = taskPage?.path === taskPath ? taskPage.data : null
   const error =
-    requestError?.page === page && requestError.retry === retry
+    requestError?.path === taskPath && requestError.retry === retry
       ? requestError.message
       : ''
-  const totalPages = tasks
-    ? Math.max(1, Math.ceil(tasks.count / TASKS_PER_PAGE))
-    : 1
 
   return (
     <section aria-labelledby="page-title">
@@ -120,6 +151,9 @@ export default function TasksPage() {
         description="Задачи, которые вы создали или выполняете."
         actions={<ButtonLink to="/tasks/new">Новая задача</ButtonLink>}
       />
+      {actionMessage && (
+        <Alert title="Не удалось удалить задачу">{actionMessage}</Alert>
+      )}
       {error ? (
         <Card>
           <Alert title="Не удалось загрузить задачи">{error}</Alert>
@@ -150,31 +184,48 @@ export default function TasksPage() {
               <span>Статус</span>
               <span>Приоритет</span>
               <span>Исполнитель</span>
+              <span>Действия</span>
             </div>
             <ul className={styles.list} aria-label="Список задач">
               {tasks.results.map((task) => (
-                <TaskRow key={task.id} task={task} users={users} />
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  users={users}
+                  canDelete={task.creator === user?.id}
+                  deleting={deletingId === task.id}
+                  onDelete={deleteTask}
+                />
               ))}
             </ul>
           </Card>
-          {tasks.count > TASKS_PER_PAGE && (
+          {(tasks.previous || tasks.next) && (
             <nav className={styles.pagination} aria-label="Страницы задач">
               <button
                 type="button"
                 className={styles.pageButton}
-                disabled={page === 1}
-                onClick={() => goToPage(page - 1)}
+                disabled={!tasks.previous}
+                onClick={() => goToPage(tasks.previous)}
               >
                 Назад
               </button>
-              <span>
-                Страница {page} из {totalPages}
-              </span>
+              {tasks.pages.map((page) => (
+                <button
+                  key={page.number}
+                  type="button"
+                  className={styles.pageNumber}
+                  aria-current={page.current ? 'page' : undefined}
+                  disabled={page.current}
+                  onClick={() => goToPage(page.url)}
+                >
+                  {page.number}
+                </button>
+              ))}
               <button
                 type="button"
                 className={styles.pageButton}
                 disabled={!tasks.next}
-                onClick={() => goToPage(page + 1)}
+                onClick={() => goToPage(tasks.next)}
               >
                 Вперёд
               </button>
